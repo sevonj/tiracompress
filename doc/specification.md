@@ -21,7 +21,7 @@ From what I understand, the time complexity of compressing LZ77 would be an abys
 The core of the project is to pack and unpack binary data. Reading and writing files, as well as messing with the archive container format is secondary. 
 
 ## Sources
-    - https://en.wikipedia.org/wiki/Deflate
-    - https://en.wikipedia.org/wiki/LZ77_and_LZ78
-    - https://en.wikipedia.org/wiki/Huffman_coding
-    - LLM usage: None whatsoever
+- https://en.wikipedia.org/wiki/Deflate
+- https://en.wikipedia.org/wiki/LZ77_and_LZ78
+- https://en.wikipedia.org/wiki/Huffman_coding
+- LLM usage: None whatsoever
