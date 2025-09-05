@@ -12,7 +12,7 @@ Task: Read about JPEG compression and draft a specification for *The Jraphics Co
 Time spent: 5h?
 
 Task: Choose a simpler problem from the examples, write spec & report, setup repo.
-Time spent: 2h
+Time spent: 3h
 
 **What did I learn?**
 
