@@ -18,6 +18,10 @@ Time spent: 2h
 
 I now possess a lot of surface level information about data compression.
 
+**What did I not learn?**
+
+I did not look deep into LZ77 at all. Also, finding information about faster than O(*n*²) DCT algorithms that I could understand turned out quite difficult, hence the change of subject.
+
 **Project progress?**
 
 I have a hello world.
