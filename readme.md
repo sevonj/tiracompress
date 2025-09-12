@@ -21,4 +21,7 @@ TiraCompress is a file compressor.
 **Other**
   - Just build & run: `cargo run --release`
   - Tests: `cargo test`
+  - Test coverage: `cargo llvm-cov --html`
+    - Report can be found at `target/llvm-cov/html/index.html`
+    - Install the coverage tool by running `cargo install cargo-llvm-cov`
   - Linter: `cargo clippy`

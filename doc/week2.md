@@ -11,6 +11,9 @@ Time spent: 30min
 Task: Read about huffman and begin implementation
 Time spent: 6h?
 
+Task: Setup and document coverage
+Time spent: 10min
+
 **What did I learn?**
 
 Working on the project forced me to think about the steps and their order.
