@@ -4,9 +4,9 @@
 - Peer review programming languages: Python, C(++)
 - Peer review languages: Finnish, English
 - Program: CS / TKT
-- Algorithms: LZ77, Huffman, DEFLATE
+- Algorithms: LZ77, Huffman, ~~DEFLATE~~
 
-The project will implement and compare both compression and decompression of binary data, using different algorithms. Chosen algorithms are LZ77 and Huffman coding, as well as DEFLATE, which combines the other two. Measured aspects are speed and compression ratio.
+The project will implement and compare both compression and decompression of binary data, using different algorithms. Chosen algorithms are LZ77 and Huffman coding~~, as well as DEFLATE, which combines the other two~~. Measured aspects are speed and compression ratio.
 
 The program will accept a one or more files, and pack them into an archive, compressed using specified compression. It can also unpack said archives into the original files. 
 
@@ -25,3 +25,6 @@ The core of the project is to pack and unpack binary data. Reading and writing f
 - https://en.wikipedia.org/wiki/LZ77_and_LZ78
 - https://en.wikipedia.org/wiki/Huffman_coding
 - LLM usage: None whatsoever
+
+## Changes
+- Removed DEFLATE from the plan after receiving week 1 feedback.

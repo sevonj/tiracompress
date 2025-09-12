@@ -5,6 +5,7 @@ TiraCompress is a file compressor.
 [➜ Spec / määrittelydokumentti](doc/specification.md)
 
 [➜ report 1](doc/week1.md)
+[➜ report 2](doc/week2.md)
 
 
 ## Development
@@ -18,6 +19,6 @@ TiraCompress is a file compressor.
   - Get your executable from `target/<yourtarget>/`
   
 **Other**
-  - Just build & run: `cargo run`
+  - Just build & run: `cargo run --release`
   - Tests: `cargo test`
   - Linter: `cargo clippy`
