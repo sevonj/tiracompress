@@ -50,7 +50,7 @@ impl HuffmanTreeNode {
         nodes.pop().unwrap()
     }
 
-    /// Turn the tree into a lookup table
+    /// Turn the tree into a lookup table. 1 => left, 0 => right
     pub fn into_codes(self) -> HashMap<u8, HuffmanCode> {
         let mut map = HashMap::new();
         let mut stack = vec![(0, 0, self)]; // tuple: (depth, code, node)
@@ -282,5 +282,51 @@ mod tests {
             2
         );
         assert_eq!(root.left.as_ref().unwrap().left.as_ref().unwrap().freq, 2);
+    }
+
+    #[test]
+    fn test_into_codes() {
+        /* Create this tree
+        a   Root(16)                _
+        b       -R:(10)             _0
+        c           -R:[5]          [00]
+        d           -L:[5]          [01]
+        e       -L:(6)              _1
+        f           -R:(4)          _10
+        g               -R:[2]      [100]
+        h               -L:[2]      [101]
+        i           -L:[2]          [11]
+            legend: (node), [leaf]
+        */
+
+        let mut a = HuffmanTreeNode::with_freq(0, 16);
+        let mut b = HuffmanTreeNode::with_freq(0, 10);
+        let c = HuffmanTreeNode::with_freq(b'c', 5);
+        let d = HuffmanTreeNode::with_freq(b'd', 5);
+        let mut e = HuffmanTreeNode::with_freq(0, 6);
+        let mut f = HuffmanTreeNode::with_freq(0, 4);
+        let g = HuffmanTreeNode::with_freq(b'g', 2);
+        let h = HuffmanTreeNode::with_freq(b'h', 2);
+        let i = HuffmanTreeNode::with_freq(b'i', 2);
+
+        f.right = Some(Box::new(g));
+        f.left = Some(Box::new(h));
+
+        e.right = Some(Box::new(f));
+        e.left = Some(Box::new(i));
+
+        b.right = Some(Box::new(c));
+        b.left = Some(Box::new(d));
+
+        a.right = Some(Box::new(b));
+        a.left = Some(Box::new(e));
+
+        let codes = a.into_codes();
+        assert_eq!(codes.len(), 5);
+        assert_eq!(*codes.get(&b'c').unwrap(), HuffmanCode::new(2, 0b_00));
+        assert_eq!(*codes.get(&b'd').unwrap(), HuffmanCode::new(2, 0b_01));
+        assert_eq!(*codes.get(&b'g').unwrap(), HuffmanCode::new(3, 0b_100));
+        assert_eq!(*codes.get(&b'h').unwrap(), HuffmanCode::new(3, 0b_101));
+        assert_eq!(*codes.get(&b'i').unwrap(), HuffmanCode::new(2, 0b_11));
     }
 }
