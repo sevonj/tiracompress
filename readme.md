@@ -16,6 +16,7 @@ TiraCompress is a file compressor.
 
 **Building**
   - Run `cargo build` at repository root. [read more](https://doc.rust-lang.org/cargo/commands/cargo-build.html)
+    - Use `--release` flag to make an optimized build, or die of old age waiting for large files to compress.  
   - Get your executable from `target/<yourtarget>/`
   
 **Other**
