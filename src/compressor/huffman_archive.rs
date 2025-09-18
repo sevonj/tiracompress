@@ -11,7 +11,7 @@ pub struct HuffmanArchive {
 
 impl HuffmanArchive {
     pub fn compress<R: Read>(reader: &mut R) -> Result<Self, std::io::Error> {
-        let tree = HuffmanTreeNode::build_tree(reader)?;
+        let tree = HuffmanTreeNode::from_reader(reader)?;
         let codes = tree.into_codes();
         let compressed_data = vec![];
 

@@ -38,12 +38,16 @@ impl HuffmanTreeNode {
     }
 
     /// Generate a tree from a reader.
-    pub fn build_tree<R: Read>(reader: &mut R) -> Result<Self, std::io::Error> {
-        let mut nodes = collect_nodes(reader)?;
+    pub fn from_reader<R: Read>(reader: &mut R) -> Result<Self, std::io::Error> {
+        let nodes = collect_nodes(reader)?;
+        Ok(Self::build_tree(nodes))
+    }
+
+    fn build_tree(mut nodes: Vec<HuffmanTreeNode>) -> Self {
         while nodes.len() > 1 {
             join_nodes(&mut nodes);
         }
-        Ok(nodes.pop().unwrap())
+        nodes.pop().unwrap()
     }
 
     /// Turn the tree into a lookup table
@@ -75,7 +79,7 @@ impl HuffmanTreeNode {
     }
 }
 
-/// Tree hierarchy building pass. Pop two bottom nodes, create a parent, and push the parent back in.
+/// Joins two bottom nodes into a new parent node. Right >= Left.  
 fn join_nodes(nodes: &mut Vec<HuffmanTreeNode>) {
     nodes.sort_unstable_by(|a, b| b.freq.cmp(&a.freq));
 
@@ -161,17 +165,18 @@ mod tests {
         assert_eq!(nodes.iter().find(|n| n.value == b'.').unwrap().freq, 1);
     }
 
-    /*  Apparently tests need to pass to get a coverage report.
     #[test]
-    fn test_build_tree_pieces() {
+    fn test_join_nodes() {
         let a = HuffmanTreeNode::with_freq(1, 5);
         let b = HuffmanTreeNode::with_freq(2, 5);
         let c = HuffmanTreeNode::with_freq(3, 2);
         let d = HuffmanTreeNode::with_freq(4, 2);
         let e = HuffmanTreeNode::with_freq(5, 2);
 
+        // freqs: [5,5,2,2,2]
         let mut nodes = vec![a, b, c, d, e];
 
+        // freqs: [5,5,4,2]
         join_nodes(&mut nodes);
         assert_eq!(nodes.len(), 4);
         let merged = nodes.iter().find(|n| n.value == 0).unwrap();
@@ -181,14 +186,101 @@ mod tests {
         assert_eq!(nodes.iter().find(|n| n.value == 1).unwrap().freq, 5);
         assert_eq!(nodes.iter().find(|n| n.value == 2).unwrap().freq, 5);
 
+        // freqs: [6,5,5]
         join_nodes(&mut nodes);
         assert_eq!(nodes.len(), 3);
         let merged = nodes.iter().find(|n| n.value == 0).unwrap();
         assert_eq!(merged.freq, 6);
-        assert_eq!(merged.left.as_ref().unwrap().freq, 4); // should left be higher?
-        assert_eq!(merged.right.as_ref().unwrap().freq, 2);
+        assert_eq!(merged.left.as_ref().unwrap().freq, 2);
+        assert_eq!(merged.right.as_ref().unwrap().freq, 4);
         assert_eq!(nodes.iter().find(|n| n.value == 1).unwrap().freq, 5);
         assert_eq!(nodes.iter().find(|n| n.value == 2).unwrap().freq, 5);
+
+        // freqs: [10,6]
+        join_nodes(&mut nodes);
+        assert_eq!(nodes.len(), 2);
+        nodes.sort_unstable_by(|a, b| b.freq.cmp(&a.freq));
+        assert_eq!(nodes[0].freq, 10);
+        assert_eq!(nodes[1].freq, 6);
+
+        // freqs: [16]
+        join_nodes(&mut nodes);
+        assert_eq!(nodes.len(), 1);
+        nodes.sort_unstable_by(|a, b| b.freq.cmp(&a.freq));
+        assert_eq!(nodes[0].freq, 16);
+
+        /* The tree should look exactly like this:
+            Root(16)
+                -R:(10)
+                    -R:[5]
+                    -L:[5]
+                -L:(6)
+                    -R:(4)
+                        -R:[2]
+                        -L:[2]
+                    -L:[2]
+
+            legend: (node), [leaf]
+        */
     }
-    // */
+
+    #[test]
+    fn test_build_tree() {
+        let a = HuffmanTreeNode::with_freq(1, 5);
+        let b = HuffmanTreeNode::with_freq(2, 5);
+        let c = HuffmanTreeNode::with_freq(3, 2);
+        let d = HuffmanTreeNode::with_freq(4, 2);
+        let e = HuffmanTreeNode::with_freq(5, 2);
+
+        let nodes = vec![a, b, c, d, e];
+        let root = HuffmanTreeNode::build_tree(nodes);
+
+        /* The tree should look exactly like this:
+            Root(16)
+                -R:(10)
+                    -R:[5]
+                    -L:[5]
+                -L:(6)
+                    -R:(4)
+                        -R:[2]
+                        -L:[2]
+                    -L:[2]
+
+            legend: (node), [leaf]
+        */
+
+        assert_eq!(root.freq, 16);
+        assert_eq!(root.right.as_ref().unwrap().freq, 10);
+        assert_eq!(root.right.as_ref().unwrap().right.as_ref().unwrap().freq, 5);
+        assert_eq!(root.right.as_ref().unwrap().left.as_ref().unwrap().freq, 5);
+        assert_eq!(root.left.as_ref().unwrap().freq, 6);
+        assert_eq!(root.left.as_ref().unwrap().right.as_ref().unwrap().freq, 4);
+        assert_eq!(
+            root.left
+                .as_ref()
+                .unwrap()
+                .right
+                .as_ref()
+                .unwrap()
+                .right
+                .as_ref()
+                .unwrap()
+                .freq,
+            2
+        );
+        assert_eq!(
+            root.left
+                .as_ref()
+                .unwrap()
+                .right
+                .as_ref()
+                .unwrap()
+                .left
+                .as_ref()
+                .unwrap()
+                .freq,
+            2
+        );
+        assert_eq!(root.left.as_ref().unwrap().left.as_ref().unwrap().freq, 2);
+    }
 }
