@@ -58,12 +58,9 @@ impl HuffmanTreeNode {
         while let Some((depth, code, mut node)) = stack.pop() {
             if node.is_leaf() {
                 let v = HuffmanCode::new(depth, code);
-                println!("{:#x} => {v}", node.value);
                 map.insert(node.value, v);
                 continue;
             }
-
-            // println!("{code:0fill$b}  ", fill = depth as usize);
 
             if let Some(right) = node.right.take() {
                 let new_code = code << 1;
