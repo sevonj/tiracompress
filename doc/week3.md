@@ -8,6 +8,9 @@ Time spent: 5min
 Task: Fix and test huffman `build_tree()`
 Time spent: 1h
 
+Task: Test `into_codes()`
+Time spent: 20min
+
 **What did I learn?**
 
 
