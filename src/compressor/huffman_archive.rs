@@ -4,7 +4,6 @@ use super::HuffmanCode;
 use super::HuffmanTreeNode;
 
 use std::collections::HashMap;
-use std::io::BufWriter;
 use std::io::Read;
 use std::io::Seek;
 
@@ -40,5 +39,77 @@ impl HuffmanArchive {
         }
 
         Ok(compressed_data)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use std::io::Cursor;
+
+    use crate::compressor::huffman_io::CodeReader;
+
+    use super::*;
+
+    // Test compression and decompression without the archive container
+    #[test]
+    fn test_compress_cycle_text() {
+        let data = b"Tomorrow I'll Tomorrow I'll Tomorrow I'll Tomorrow I'll".to_vec();
+        let num_bytes = data.len();
+
+        let tree = HuffmanTreeNode::from_reader(&mut Cursor::new(&data)).unwrap();
+        let codes = tree.into_codes();
+
+        let mut compressed_data = vec![];
+        let mut writer = CodeWriter::new(&mut compressed_data);
+        for byte in data.bytes() {
+            let byte = byte.unwrap();
+            let code = codes.get(&byte).unwrap();
+            writer.write(code).unwrap();
+        }
+        writer.close().unwrap();
+
+        let mut codes_reverse = HashMap::new();
+        for (k, v) in codes {
+            codes_reverse.insert(v, k);
+        }
+        let mut uncompressed = vec![];
+        let mut reader = CodeReader::new(&*compressed_data, &codes_reverse);
+        for _ in 0..num_bytes {
+            uncompressed.push(reader.read().unwrap());
+        }
+
+        assert_eq!(data, uncompressed);
+    }
+
+    // Test compression and decompression without the archive container
+    #[test]
+    fn test_compress_cycle_data() {
+        let data = std::fs::read("samples/salsa.mid").unwrap();
+        let num_bytes = data.len();
+
+        let tree = HuffmanTreeNode::from_reader(&mut Cursor::new(&data)).unwrap();
+        let codes = tree.into_codes();
+
+        let mut compressed_data = vec![];
+        let mut writer = CodeWriter::new(&mut compressed_data);
+        for byte in data.bytes() {
+            let byte = byte.unwrap();
+            let code = codes.get(&byte).unwrap();
+            writer.write(code).unwrap();
+        }
+        writer.close().unwrap();
+
+        let mut codes_reverse = HashMap::new();
+        for (k, v) in codes {
+            codes_reverse.insert(v, k);
+        }
+        let mut uncompressed = vec![];
+        let mut reader = CodeReader::new(&*compressed_data, &codes_reverse);
+        for _ in 0..num_bytes {
+            uncompressed.push(reader.read().unwrap());
+        }
+
+        assert_eq!(data, uncompressed);
     }
 }

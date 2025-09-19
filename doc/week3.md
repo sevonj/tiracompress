@@ -17,13 +17,24 @@ Time spent: 2h30
 Task: Finish huffman code writer.
 Time spent: 20min
 
+Task: Build huffman packed reader.
+Time spent: 40min
+
+Task: Setup test case for actually compressing and decompressing data. 
+Time spent: 30min
+
 
 **What did I learn?**
 
+The thing from last week's *"What did I not learn"*
 
 **What did I not learn?**
 
+Anything about LZ compression. I should pick up the pace.
 
 **Project progress?**
 
 - Build Huffman tree
+- Build Huffman bit writer
+- Build Huffman bit reader
+- The archive container isn't finished, but *the core* of huffman encoding is done.
