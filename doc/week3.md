@@ -14,6 +14,10 @@ Time spent: 20min
 Task: Implement packed huffman code writer, almost working.
 Time spent: 2h30
 
+Task: Finish huffman code writer.
+Time spent: 20min
+
+
 **What did I learn?**
 
 

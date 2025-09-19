@@ -4,7 +4,7 @@ use std::io::Write;
 
 use crate::compressor::huffman_code::HuffmanCode;
 
-/// Writes huff
+/// Writer for packed data
 pub struct CodeWriter<W: Write> {
     writer: W,
     /// Cached incomplete byte
@@ -22,23 +22,10 @@ impl<W: Write> CodeWriter<W> {
         }
     }
 
+    /// Pack a byte
     pub fn write(&mut self, code: &HuffmanCode) -> Result<(), std::io::Error> {
         let mut total_len = code.len();
-        let mut bits = code.bits();
-
-        println!("{bits:032b}");
-        bits = u32::from_le_bytes(bits.to_be_bytes());
-
-        //let mut temp_len = 32 - total_len;
-        //while temp_len > 8 {
-        //    bits >>= 8;
-        //    temp_len -= 8;
-        //}
-
-        let unused_bytes = (32 - total_len) / 8;
-        bits >>= 8 * unused_bytes;
-
-        println!("{bits:032b}");
+        let mut bits = code.bits() << (32 - total_len);
 
         while total_len != 0 {
             let len = min(total_len, 8);
@@ -46,17 +33,7 @@ impl<W: Write> CodeWriter<W> {
             let available = 8 - self.cache_len;
             let len_write = min(available, len);
             self.cache <<= len_write % 8;
-            let mut value = bits as u8;
-            if len > available {
-                let skip_count = total_len - available;
-                let skipped = (value << (8 - skip_count)) >> 8 - skip_count;
-                let skipped = (skipped as u32) << len_write;
-                value >>= skip_count;
-
-                bits >>= skip_count + len_write;
-                bits <<= skip_count + len_write;
-                bits |= skipped;
-            }
+            let mut value = (bits >> (32 - len_write)) as u8;
             value <<= self.cache_len;
             value >>= self.cache_len;
             self.cache |= value;
@@ -69,7 +46,7 @@ impl<W: Write> CodeWriter<W> {
             }
 
             total_len -= len_write;
-            bits >>= len_write;
+            bits <<= len_write;
         }
 
         Ok(())
@@ -223,13 +200,74 @@ mod tests {
         writer.close().unwrap();
     }
 
-    /*
     #[test]
     fn test_write_code_sizes_over_1b() {
         let mut compressed = vec![];
         let mut writer = CodeWriter::new(&mut compressed);
-        writer.write(&HuffmanCode::new(9, 0b111011001)).unwrap();
+        writer.write(&HuffmanCode::new(9, 0b11101100_1)).unwrap();
         writer.close().unwrap();
+        println!("{:08b}_{:08b}", compressed[0], compressed[1]);
         assert_eq!(compressed, vec![0b_11101100, 0b_1_0000000]);
-    } // */
+
+        let mut compressed = vec![];
+        let mut writer = CodeWriter::new(&mut compressed);
+        writer.write(&HuffmanCode::new(10, 0b11101100_11)).unwrap();
+        writer.close().unwrap();
+        println!("{:08b}_{:08b}", compressed[0], compressed[1]);
+        assert_eq!(compressed, vec![0b_11101100, 0b_1_1000000]);
+
+        let mut compressed = vec![];
+        let mut writer = CodeWriter::new(&mut compressed);
+        writer
+            .write(&HuffmanCode::new(16, 0b11101100_11001011))
+            .unwrap();
+        writer.close().unwrap();
+        println!("{:08b}_{:08b}", compressed[0], compressed[1]);
+        assert_eq!(compressed, vec![0b_11101100, 0b_11001011]);
+    }
+
+    #[test]
+    fn test_write_code_sizes_over_2b() {
+        let mut compressed = vec![];
+        let mut writer = CodeWriter::new(&mut compressed);
+        writer
+            .write(&HuffmanCode::new(17, 0b11101100_11001011_1))
+            .unwrap();
+        writer.close().unwrap();
+        println!("{:08b}_{:08b}", compressed[0], compressed[1]);
+        assert_eq!(compressed, vec![0b_11101100, 0b_11001011, 0b_1_0000000]);
+
+        let mut compressed = vec![];
+        let mut writer = CodeWriter::new(&mut compressed);
+        writer
+            .write(&HuffmanCode::new(17, 0b11101100_11001011_0))
+            .unwrap();
+        writer.close().unwrap();
+        println!("{:08b}_{:08b}", compressed[0], compressed[1]);
+        assert_eq!(compressed, vec![0b_11101100, 0b_11001011, 0b_0_0000000]);
+
+        let mut compressed = vec![];
+        let mut writer = CodeWriter::new(&mut compressed);
+        writer
+            .write(&HuffmanCode::new(24, 0b11101100_11001011_01111110))
+            .unwrap();
+        writer.close().unwrap();
+        println!("{:08b}_{:08b}", compressed[0], compressed[1]);
+        assert_eq!(compressed, vec![0b_11101100, 0b_11001011, 0b_01111110]);
+    }
+
+    #[test]
+    fn test_write_code_sizes_over_3b() {
+        let mut compressed = vec![];
+        let mut writer = CodeWriter::new(&mut compressed);
+        writer
+            .write(&HuffmanCode::new(25, 0b11101100_11001011_01111110_1))
+            .unwrap();
+        writer.close().unwrap();
+        println!("{:08b}_{:08b}", compressed[0], compressed[1]);
+        assert_eq!(
+            compressed,
+            vec![0b_11101100, 0b_11001011, 0b_01111110, 0b_10000000]
+        );
+    }
 }
