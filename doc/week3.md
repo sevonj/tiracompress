@@ -23,6 +23,9 @@ Time spent: 40min
 Task: Setup test case for actually compressing and decompressing data. 
 Time spent: 30min
 
+Task: Create testing doc and finish week3 report
+Time spent: 20min
+
 
 **What did I learn?**
 
