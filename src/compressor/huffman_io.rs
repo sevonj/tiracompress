@@ -1,8 +1,9 @@
 use std::cmp::min;
+use std::collections::HashMap;
 use std::io::Read;
 use std::io::Write;
 
-use crate::compressor::huffman_code::HuffmanCode;
+use super::HuffmanCode;
 
 /// Writer for packed data
 pub struct CodeWriter<W: Write> {
@@ -58,6 +59,61 @@ impl<W: Write> CodeWriter<W> {
             self.writer.write_all(&[self.cache])?;
         }
         Ok(())
+    }
+}
+
+/// A very simple reader for packed data
+pub struct CodeReader<'a, R: Read> {
+    map: &'a HashMap<HuffmanCode, u8>,
+    reader: R,
+    /// Cached incomplete byte
+    cache: u8,
+    /// Which bit is next?
+    bit: u8,
+}
+
+impl<'a, R: Read> CodeReader<'a, R> {
+    pub fn new(reader: R, map: &'a HashMap<HuffmanCode, u8>) -> Self {
+        CodeReader {
+            map,
+            reader,
+            cache: 0,
+            bit: 7,
+        }
+    }
+
+    /// Unpack a byte
+    pub fn read(&mut self) -> Result<u8, std::io::Error> {
+        let mut len = 0_u8;
+        let mut bits = 0_u32;
+
+        loop {
+            len += 1;
+            bits <<= 1;
+            bits += self.next_bit()? as u32;
+
+            if let Some(byte) = self.map.get(&HuffmanCode::new(len, bits)) {
+                return Ok(*byte);
+            }
+        }
+    }
+
+    /// Next bit from stream. Return falue is always 0 or 1.
+    fn next_bit(&mut self) -> Result<u8, std::io::Error> {
+        if self.bit == 7 {
+            let mut buf = [0_u8];
+            self.reader.read_exact(&mut buf)?;
+            self.cache = buf[0];
+        }
+
+        let value = (self.cache >> self.bit) & 1;
+
+        if self.bit == 0 {
+            self.bit = 8;
+        }
+        self.bit -= 1;
+
+        Ok(value)
     }
 }
 
@@ -269,5 +325,55 @@ mod tests {
             compressed,
             vec![0b_11101100, 0b_11001011, 0b_01111110, 0b_10000000]
         );
+    }
+
+    #[test]
+    fn test_read_next_bit() {
+        let data = vec![0b_11001010, 0b_11100011];
+        let map = HashMap::new();
+        let mut reader = CodeReader::new(&*data, &map);
+
+        assert_eq!(reader.next_bit().unwrap(), 1);
+        assert_eq!(reader.next_bit().unwrap(), 1);
+        assert_eq!(reader.next_bit().unwrap(), 0);
+        assert_eq!(reader.next_bit().unwrap(), 0);
+        assert_eq!(reader.next_bit().unwrap(), 1);
+        assert_eq!(reader.next_bit().unwrap(), 0);
+        assert_eq!(reader.next_bit().unwrap(), 1);
+        assert_eq!(reader.next_bit().unwrap(), 0);
+
+        assert_eq!(reader.next_bit().unwrap(), 1);
+        assert_eq!(reader.next_bit().unwrap(), 1);
+        assert_eq!(reader.next_bit().unwrap(), 1);
+        assert_eq!(reader.next_bit().unwrap(), 0);
+        assert_eq!(reader.next_bit().unwrap(), 0);
+        assert_eq!(reader.next_bit().unwrap(), 0);
+        assert_eq!(reader.next_bit().unwrap(), 1);
+        assert_eq!(reader.next_bit().unwrap(), 1);
+
+        assert!(reader.next_bit().is_err());
+    }
+
+    #[test]
+    fn test_read_unpack_byte() {
+        let mut map = HashMap::new();
+        map.insert(HuffmanCode::new(3, 0b_000), b'a');
+        map.insert(HuffmanCode::new(4, 0b_0010), b'b');
+        map.insert(HuffmanCode::new(3, 0b_010), b'c');
+        map.insert(HuffmanCode::new(3, 0b_011), b'd');
+        map.insert(HuffmanCode::new(1, 0b_1), b'e');
+
+        let data = vec![0b_000_0010_0, 0b_10_011_1_1_0];
+
+        let mut reader = CodeReader::new(&*data, &map);
+
+        assert_eq!(reader.read().unwrap(), b'a');
+        assert_eq!(reader.read().unwrap(), b'b');
+        assert_eq!(reader.read().unwrap(), b'c');
+        assert_eq!(reader.read().unwrap(), b'd');
+        assert_eq!(reader.read().unwrap(), b'e');
+        assert_eq!(reader.read().unwrap(), b'e');
+
+        assert!(reader.read().is_err());
     }
 }

@@ -2,7 +2,7 @@ use std::io::Read;
 use std::io::Write;
 
 /// The serializable huffman code format.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub struct HuffmanCode {
     len: u8,   // Number of bits used.
     bits: u32, // Most significant get truncated.
