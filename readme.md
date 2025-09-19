@@ -2,7 +2,7 @@
 
 TiraCompress is a file compressor.
 
-[➜ Spec / määrittelydokumentti](doc/specification.md)
+[➜ Spec / määrittelydokumentti](doc/specification.md) [➜ Testing doc / testausdokumentti](doc/testing.md) 
 
 [➜ report 1](doc/week1.md)
 [➜ report 2](doc/week2.md)

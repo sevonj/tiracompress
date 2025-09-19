@@ -119,7 +119,7 @@ mod tests {
     }
 
     #[test]
-    fn test_collect_nodes() {
+    fn test_collect_nodes_data() {
         let bytes = [11, 11, 11, 11, 3, 3];
         let nodes = bytes_to_nodes!(bytes).unwrap();
         assert_eq!(nodes.len(), 2);
@@ -139,7 +139,7 @@ mod tests {
     }
 
     #[test]
-    fn test_collect_nodes_2() {
+    fn test_collect_nodes_text() {
         let bytes = b"What a nice day to write unit tests.";
         let nodes = bytes_to_nodes!(bytes).unwrap();
         assert_eq!(nodes.len(), 17);
