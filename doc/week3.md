@@ -11,6 +11,9 @@ Time spent: 1h
 Task: Test `into_codes()`
 Time spent: 20min
 
+Task: Implement packed huffman code writer, almost working.
+Time spent: 2h30
+
 **What did I learn?**
 
 

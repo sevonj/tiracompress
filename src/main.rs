@@ -9,5 +9,5 @@ fn main() {
     let f = File::open(&path).unwrap();
     let mut reader = BufReader::new(&f);
 
-    let archive = HuffmanArchive::compress(&mut reader);
+    let archive = HuffmanArchive::new(&mut reader);
 }

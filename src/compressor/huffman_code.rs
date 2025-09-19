@@ -5,15 +5,23 @@ use std::io::Write;
 #[derive(Debug, PartialEq, Eq)]
 pub struct HuffmanCode {
     len: u8,   // Number of bits used.
-    code: u32, // The bits. Most significant bits get truncated.
+    bits: u32, // Most significant get truncated.
 }
 
 impl HuffmanCode {
-    pub fn new(len: u8, code: u32) -> Self {
+    pub const fn len(&self) -> u8 {
+        self.len
+    }
+
+    pub const fn bits(&self) -> u32 {
+        self.bits
+    }
+
+    pub fn new(len: u8, bits: u32) -> Self {
         assert!(len <= 32);
         let num_unused_bits = 32 - len;
-        let code = (code << num_unused_bits) >> num_unused_bits;
-        Self { len, code }
+        let bits = (bits << num_unused_bits) >> num_unused_bits;
+        Self { len, bits }
     }
 
     pub fn read<R: Read>(reader: &mut R) -> Result<Self, std::io::Error> {
@@ -27,7 +35,7 @@ impl HuffmanCode {
 
 impl std::fmt::Display for HuffmanCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:0len$b}", self.code, len = self.len as usize)
+        write!(f, "{:0len$b}", self.bits, len = self.len as usize)
     }
 }
 
