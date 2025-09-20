@@ -1,3 +1,5 @@
+use byteorder::LittleEndian as LE;
+use byteorder::ReadBytesExt;
 use std::io::Read;
 use std::io::Write;
 
@@ -24,12 +26,18 @@ impl HuffmanCode {
         Self { len, bits }
     }
 
+    /// Deserialize (lookup table, not packed data)
     pub fn read<R: Read>(reader: &mut R) -> Result<Self, std::io::Error> {
-        todo!()
+        let len = reader.read_u8()?;
+        let bits = reader.read_u32::<LE>()?;
+        Ok(Self { len, bits })
     }
 
+    /// Serialize (lookup table, not packed data)
     pub fn write<W: Write>(&self, writer: &mut W) -> Result<(), std::io::Error> {
-        todo!()
+        writer.write_all(&[self.len])?;
+        writer.write_all(&self.bits.to_le_bytes())?;
+        Ok(())
     }
 }
 

@@ -1,44 +1,84 @@
-use crate::compressor::huffman_io::CodeWriter;
+use byteorder::LittleEndian as LE;
+use byteorder::ReadBytesExt;
+use byteorder::WriteBytesExt;
+use std::collections::HashMap;
+use std::io::Cursor;
+use std::io::Read;
+use std::io::Write;
 
+use super::CodeReader;
+use super::CodeWriter;
 use super::HuffmanCode;
 use super::HuffmanTreeNode;
 
-use std::collections::HashMap;
-use std::io::Read;
-use std::io::Seek;
-
 pub struct HuffmanArchive {
-    codes: HashMap<u8, HuffmanCode>,
-    compressed_data: Vec<u8>,
+    data: Vec<u8>, // Uncompressed
 }
 
+/// Archive layout:
+/// num_codes: u32
+/// num_bytes: u32
+/// code_table: [(byte: u8, code: HuffmanCode) * num_codes]
+/// compressed data: [(arbitrary number of bits) * num_bytes]
 impl HuffmanArchive {
-    pub fn new<R: Read + Seek>(reader: &mut R) -> Result<Self, std::io::Error> {
-        let start_pos = reader.stream_position()?;
-        let tree = HuffmanTreeNode::from_reader(reader)?;
-        reader.seek(std::io::SeekFrom::Start(start_pos))?;
-
-        let codes = tree.into_codes();
-        let compressed_data = vec![];
-
-        Ok(Self {
-            codes,
-            compressed_data,
-        })
+    pub fn new(data: Vec<u8>) -> Self {
+        Self { data }
     }
 
-    fn compress<R: Read + Seek>(
-        reader: &mut R,
-        codes: &HashMap<u8, HuffmanCode>,
-    ) -> Result<Vec<u8>, std::io::Error> {
-        let mut compressed_data = vec![];
-        let mut writer = CodeWriter::new(&mut compressed_data);
+    pub fn data(&self) -> &[u8] {
+        &self.data
+    }
 
-        for byte in reader.bytes() {
-            writer.write(codes.get(&byte?).unwrap())?;
+    pub fn inner(self) -> Vec<u8> {
+        self.data
+    }
+
+    /// Unpack self
+    pub fn read<R: Read>(reader: &mut R) -> Result<Self, std::io::Error> {
+        let num_codes = reader.read_u32::<LE>()?;
+        let num_bytes = reader.read_u32::<LE>()?;
+        let mut code_table = HashMap::new();
+        let mut data = Vec::with_capacity(num_bytes as usize);
+
+        for _ in 0..num_codes {
+            let v = reader.read_u8()?;
+            let k = HuffmanCode::read(reader)?;
+            code_table.insert(k, v);
         }
 
-        Ok(compressed_data)
+        let mut code_reader = CodeReader::new(reader, &code_table);
+        for _ in 0..num_bytes {
+            data.push(code_reader.read().unwrap());
+        }
+
+        Ok(Self { data })
+    }
+
+    /// Pack self
+    pub fn write<W: Write>(&self, writer: &mut W) -> Result<(), std::io::Error> {
+        let tree = HuffmanTreeNode::from_reader(&mut Cursor::new(&self.data)).unwrap();
+        let codes = tree.into_codes();
+
+        // num_codes
+        writer.write_u32::<LE>(codes.len() as u32)?;
+
+        // num_bytes
+        writer.write_u32::<LE>(self.data.len() as u32)?;
+
+        // code_table
+        for (k, v) in &codes {
+            writer.write_u8(*k)?;
+            v.write(writer)?;
+        }
+
+        // compressed_data
+        let mut code_writer = CodeWriter::new(writer);
+        for byte in &mut Cursor::new(&self.data).bytes() {
+            code_writer.write(codes.get(&byte?).unwrap())?;
+        }
+        code_writer.close()?;
+
+        Ok(())
     }
 }
 
@@ -47,13 +87,11 @@ mod tests {
 
     use std::io::Cursor;
 
-    use crate::compressor::huffman_io::CodeReader;
-
     use super::*;
 
     // Test compression and decompression without the archive container
     #[test]
-    fn test_compress_cycle_text() {
+    fn test_compress_cycle_text_identical() {
         let data = b"Tomorrow I'll Tomorrow I'll Tomorrow I'll Tomorrow I'll".to_vec();
         let num_bytes = data.len();
 
@@ -84,7 +122,7 @@ mod tests {
 
     // Test compression and decompression without the archive container
     #[test]
-    fn test_compress_cycle_data() {
+    fn test_compress_cycle_data_identical() {
         let data = std::fs::read("samples/salsa.mid").unwrap();
         let num_bytes = data.len();
 
@@ -109,6 +147,36 @@ mod tests {
         for _ in 0..num_bytes {
             uncompressed.push(reader.read().unwrap());
         }
+
+        assert_eq!(data, uncompressed);
+    }
+
+    // Test compression and decompression with the archive container
+    #[test]
+    fn test_archive_cycle_text_identical() {
+        let data = b"Tomorrow I'll Tomorrow I'll Tomorrow I'll Tomorrow I'll".to_vec();
+
+        let arc = HuffmanArchive::new(data.clone());
+        let mut compressed = vec![];
+        arc.write(&mut Cursor::new(&mut compressed)).unwrap();
+
+        let arc = HuffmanArchive::read(&mut Cursor::new(&mut compressed)).unwrap();
+        let uncompressed = arc.inner();
+
+        assert_eq!(data, uncompressed);
+    }
+
+    // Test compression and decompression with the archive container
+    #[test]
+    fn test_archive_cycle_data_identical() {
+        let data = std::fs::read("samples/salsa.mid").unwrap();
+
+        let arc = HuffmanArchive::new(data.clone());
+        let mut compressed = vec![];
+        arc.write(&mut Cursor::new(&mut compressed)).unwrap();
+
+        let arc = HuffmanArchive::read(&mut Cursor::new(&mut compressed)).unwrap();
+        let uncompressed = arc.inner();
 
         assert_eq!(data, uncompressed);
     }
