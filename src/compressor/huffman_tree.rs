@@ -28,15 +28,6 @@ impl HuffmanTreeNode {
         }
     }
 
-    fn with_freq(value: u8, freq: u32) -> Self {
-        Self {
-            left: None,
-            right: None,
-            freq,
-            value,
-        }
-    }
-
     /// Generate a tree from a reader.
     pub fn from_reader<R: Read>(reader: &mut R) -> Result<Self, std::io::Error> {
         let nodes = collect_nodes(reader)?;
@@ -116,6 +107,17 @@ mod tests {
             let mut reader = BufReader::new(Cursor::new($x));
             collect_nodes(&mut reader)
         }};
+    }
+
+    impl HuffmanTreeNode {
+        fn with_freq(value: u8, freq: u32) -> Self {
+            Self {
+                left: None,
+                right: None,
+                freq,
+                value,
+            }
+        }
     }
 
     #[test]
