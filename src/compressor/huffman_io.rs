@@ -25,18 +25,14 @@ impl<W: Write> CodeWriter<W> {
 
     /// Pack a byte
     pub fn write(&mut self, code: &HuffmanCode) -> Result<(), std::io::Error> {
-        let mut total_len = code.len();
-        let mut bits = code.bits() << (32 - total_len);
+        let mut len = code.len();
+        let mut bits = code.bits() << (32 - len);
 
-        while total_len != 0 {
-            let len = min(total_len, 8);
-
+        while len != 0 {
             let available = 8 - self.cache_len;
             let len_write = min(available, len);
             self.cache <<= len_write % 8;
-            let mut value = (bits >> (32 - len_write)) as u8;
-            value <<= self.cache_len;
-            value >>= self.cache_len;
+            let value = (bits >> (32 - len_write)) as u8;
             self.cache |= value;
             self.cache_len += len_write;
 
@@ -46,7 +42,7 @@ impl<W: Write> CodeWriter<W> {
                 self.cache_len = 0;
             }
 
-            total_len -= len_write;
+            len -= len_write;
             bits <<= len_write;
         }
 
