@@ -69,13 +69,14 @@ impl LzPointer {
             }
         }
 
-        if best_len > 2 {
-            return Ok(Some(Self {
-                off: best_off as isize - input_pos as isize,
-                len: best_len,
-            }));
+        if best_len < 3 {
+            return Ok(None);
         }
-        Ok(None)
+
+        Ok(Some(Self {
+            off: best_off as isize - input_pos as isize,
+            len: best_len,
+        }))
     }
 }
 
