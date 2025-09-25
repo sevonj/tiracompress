@@ -48,11 +48,7 @@ impl LzPointer {
         Self { off, len }
     }
 
-    pub fn find(
-        input: &[u8],
-        input_pos: usize,
-        output: &[u8],
-    ) -> Result<Option<Self>, std::io::Error> {
+    pub fn find(input: &[u8], input_pos: usize) -> Result<Option<Self>, std::io::Error> {
         let mut best_len = 0;
         let mut best_off = 0;
 
@@ -91,11 +87,43 @@ mod tests {
     #[test]
     fn test_pointer_find_match() {
         let input = b"Rep_eat Repeat Repeat";
-        let output = b"Repeat ".to_vec();
 
         // pos 8 is the second 'R'
-        let result = LzPointer::find(input, 8, &output).unwrap().unwrap();
+        let result = LzPointer::find(input, 8).unwrap().unwrap();
 
         assert_eq!(result, LzPointer::new(-8, 3));
+    }
+
+    // Match ends after input pos
+    #[test]
+    fn test_pointer_find_match_exceed() {
+        let input = b"abcd_abcd_abcd-xyzxyzxyzx";
+
+        // pos 7 is the second 'c'
+        let result = LzPointer::find(input, 7).unwrap().unwrap();
+
+        assert_eq!(result, LzPointer::new(-5, 7));
+    }
+
+    // Tests match minimum limit. TODO: actually think about the limit
+    #[test]
+    fn test_pointer_find_match_3b() {
+        let input = b"abcdefffghifffjklmn";
+
+        // pos 11 is the start of the second "fff"
+        let result = LzPointer::find(input, 11).unwrap().unwrap();
+
+        assert_eq!(result, LzPointer::new(-6, 3));
+    }
+
+    // Tests match minimum limit. TODO: actually think about the limit
+    #[test]
+    fn test_pointer_find_match_2b() {
+        let input = b"abcdeffxghiffyjklmn";
+
+        // pos 11 is the start of the second "ff"
+        let result = LzPointer::find(input, 11).unwrap();
+
+        assert_eq!(result, None);
     }
 }
