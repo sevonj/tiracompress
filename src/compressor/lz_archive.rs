@@ -1,7 +1,11 @@
+use byteorder::LittleEndian as LE;
+use byteorder::WriteBytesExt;
 use std::io::Read;
 use std::io::Write;
 
 use super::LzPointer;
+
+const LEN_SEARCH_WINDOW: usize = 8;
 
 pub struct LzArchive {
     data: Vec<u8>, // Uncompressed
@@ -27,7 +31,28 @@ impl LzArchive {
 
     /// Pack self
     pub fn write<W: Write>(&self, writer: &mut W) -> Result<(), std::io::Error> {
-        todo!()
+        let mut i = 0;
+        while i < self.data.len() {
+            let input_start = if i > LEN_SEARCH_WINDOW {
+                i - LEN_SEARCH_WINDOW
+            } else {
+                0
+            };
+            let input = &self.data[input_start..];
+
+            if let Some(ptr) = LzPointer::find(input, i - input_start)? {
+                writer.write_u8(1_u8)?; // To be packed into 1 bit
+                writer.write_u8(ptr.off() as u8)?; // To be packed into n bits
+                writer.write_u8(ptr.len() as u8)?; // To be packed into m bits
+                i += ptr.len();
+            } else {
+                writer.write_u8(0_u8)?; // To be packed into 1 bit
+                writer.write_u8(self.data[i])?;
+                i += 1;
+            }
+        }
+
+        Ok(())
     }
 }
 
@@ -35,4 +60,31 @@ impl LzArchive {
 mod tests {
 
     use super::*;
+
+    #[test]
+    fn test_lz_compress_whitebox() {
+        let input = b"Rep_eat Repeat RepRep";
+
+        let arc = LzArchive::new(input.to_vec());
+
+        let mut output = vec![];
+        arc.write(&mut output).unwrap();
+
+        let rc = b'R';
+        let e = b'e';
+        let p = b'p';
+        let underscore = b'_';
+        let a = b'a';
+        let space = b' ';
+        let t = b't';
+
+        let expected = vec![
+            0, rc, 0, e, 0, p, 0, underscore, 0, e, 0, a, 0, t, 0, space, //
+            1, 8, 3, // ptr to "Rep"
+            1, 7, 7, // ptr to "eat Repeat Rep"
+            1, 3, 3, // ptr to "Rep" at the end of previous ptr data
+        ];
+
+        assert_eq!(output, expected)
+    }
 }

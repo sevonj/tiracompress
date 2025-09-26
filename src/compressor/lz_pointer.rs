@@ -1,11 +1,11 @@
 #[derive(Debug, PartialEq, Eq)]
 pub struct LzPointer {
-    off: isize, // Relative to current read pos
+    off: usize, // How far is it from input pos
     len: usize, // Number of bytes
 }
 
 impl LzPointer {
-    pub const fn off(&self) -> isize {
+    pub const fn off(&self) -> usize {
         self.off
     }
 
@@ -13,7 +13,7 @@ impl LzPointer {
         self.len
     }
 
-    pub fn new(off: isize, len: usize) -> Self {
+    pub fn new(off: usize, len: usize) -> Self {
         Self { off, len }
     }
 
@@ -34,7 +34,6 @@ impl LzPointer {
                 if *byte != input[off_input_char] {
                     break;
                 }
-                println!("match: {i}, len: {best_len}, off: {best_off}");
             }
         }
 
@@ -43,7 +42,7 @@ impl LzPointer {
         }
 
         Ok(Some(Self {
-            off: best_off as isize - input_pos as isize,
+            off: input_pos - best_off,
             len: best_len,
         }))
     }
@@ -61,7 +60,7 @@ mod tests {
         // pos 8 is the second 'R'
         let result = LzPointer::find(input, 8).unwrap().unwrap();
 
-        assert_eq!(result, LzPointer::new(-8, 3));
+        assert_eq!(result, LzPointer::new(8, 3));
     }
 
     // Match ends after input pos
@@ -72,7 +71,7 @@ mod tests {
         // pos 7 is the second 'c'
         let result = LzPointer::find(input, 7).unwrap().unwrap();
 
-        assert_eq!(result, LzPointer::new(-5, 7));
+        assert_eq!(result, LzPointer::new(5, 7));
     }
 
     // Tests match minimum limit. TODO: actually think about the limit
@@ -83,7 +82,7 @@ mod tests {
         // pos 11 is the start of the second "fff"
         let result = LzPointer::find(input, 11).unwrap().unwrap();
 
-        assert_eq!(result, LzPointer::new(-6, 3));
+        assert_eq!(result, LzPointer::new(6, 3));
     }
 
     // Tests match minimum limit. TODO: actually think about the limit
