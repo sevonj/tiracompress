@@ -27,18 +27,18 @@ impl LzPointer {
     pub fn new(off: usize, len: usize) -> Self {
         debug_assert!(off <= Self::MAX_OFF);
         debug_assert!(len <= Self::MAX_LEN);
+
         Self { off, len }
     }
 
     pub fn find(input: &[u8], input_pos: usize) -> Result<Option<Self>, std::io::Error> {
         let input_start = input_pos.saturating_sub(Self::MAX_OFF);
-        let window = &input[input_start..];
 
         let mut best_len = 0;
         let mut best_off = 0;
 
-        for off in 0..input_pos {
-            for (i, byte) in window[off..].iter().enumerate() {
+        for off in input_start..input_pos {
+            for (i, byte) in input[off..].iter().enumerate() {
                 let off_input_char = input_pos + i;
                 if i > best_len {
                     best_off = off;
@@ -47,10 +47,10 @@ impl LzPointer {
                 if i == Self::MAX_LEN {
                     break;
                 }
-                if off_input_char == window.len() {
+                if off_input_char == input.len() {
                     break;
                 }
-                if *byte != window[off_input_char] {
+                if *byte != input[off_input_char] {
                     break;
                 }
             }
@@ -59,6 +59,9 @@ impl LzPointer {
         if best_len < 3 {
             return Ok(None);
         }
+
+        debug_assert!(input_pos - best_off <= Self::MAX_OFF);
+        debug_assert!(best_len <= Self::MAX_LEN);
 
         Ok(Some(Self {
             off: input_pos - best_off,
@@ -71,6 +74,7 @@ impl From<u16> for LzPointer {
     fn from(value: u16) -> Self {
         let off = value & 0xfff;
         let len = value >> 12;
+
         Self {
             off: off as usize,
             len: len as usize,
@@ -80,7 +84,7 @@ impl From<u16> for LzPointer {
 
 impl From<LzPointer> for u16 {
     fn from(value: LzPointer) -> Self {
-        let off = value.off() as u16;
+        let off = value.off as u16;
         let len = (value.len << 12) as u16;
         off + len
     }

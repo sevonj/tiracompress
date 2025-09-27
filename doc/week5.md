@@ -5,6 +5,9 @@
 Task: LZ77 pointer can be packed into 2B, search window limit comes from pointer's size (12b => max 4096).
 Time spent: 30min
 
+Task: LZ77 byte-aligned compress-decompress
+Time spent: 1h
+
 **What did I learn?**
 
 
