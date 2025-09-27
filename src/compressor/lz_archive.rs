@@ -59,8 +59,23 @@ impl LzArchive {
     }
 
     /// Pack self
-    pub fn write<W: Write>(&self, _writer: &mut W) -> Result<(), std::io::Error> {
-        todo!()
+    pub fn write<W: Write>(&self, writer: &mut W) -> Result<(), std::io::Error> {
+        writer.write_u32::<LE>(self.data.len() as u32)?;
+
+        let mut i = 0;
+        while i < self.data.len() {
+            if let Some(ptr) = LzPointer::find(&self.data, i)? {
+                i += ptr.len();
+                writer.write_u8(1_u8)?; // To be packed into 1 bit
+                writer.write_u16::<LE>(ptr.into())?;
+            } else {
+                writer.write_u8(0_u8)?; // To be packed into 1 bit
+                writer.write_u8(self.data[i])?;
+                i += 1;
+            }
+        }
+
+        Ok(())
     }
 
     /// Pack self, space-inefficient whole byte aligned

@@ -8,6 +8,9 @@ Time spent: 30min
 Task: LZ77 byte-aligned compress-decompress
 Time spent: 1h
 
+Task: LZ77 BitWriter
+Time spent: 40min
+
 **What did I learn?**
 
 
