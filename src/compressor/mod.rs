@@ -12,5 +12,6 @@ use huffman_io::CodeReader;
 use huffman_io::CodeWriter;
 use huffman_tree::HuffmanTreeNode;
 pub use lz_archive::LzArchive;
+use lz_io::BitReader;
 use lz_io::BitWriter;
 use lz_pointer::LzPointer;

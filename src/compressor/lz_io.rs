@@ -20,7 +20,6 @@ impl<W: Write> BitWriter<W> {
         }
     }
 
-    /// Pack a byte
     /// len: number of bits in data
     /// data: bits to pack. Most significant are cut off.u
     pub fn write(&mut self, mut len: u8, mut data: u8) -> Result<(), std::io::Error> {
@@ -56,8 +55,59 @@ impl<W: Write> BitWriter<W> {
     }
 }
 
+/// A very simple reader for packed data
+pub struct BitReader<R: Read> {
+    reader: R,
+    /// Cached incomplete byte
+    cache: u8,
+    /// Which bit is next?
+    bit: u8,
+}
+
+impl<R: Read> BitReader<R> {
+    pub fn new(reader: R) -> Self {
+        BitReader {
+            reader,
+            cache: 0,
+            bit: 7,
+        }
+    }
+
+    /// Unpack a byte
+    pub fn read_byte(&mut self) -> Result<u8, std::io::Error> {
+        let mut byte = 0;
+
+        for _ in 0..8 {
+            byte <<= 1;
+            byte += self.read_bit()?;
+        }
+
+        Ok(byte)
+    }
+
+    /// Next bit from stream. Return falue is always 0 or 1.
+    pub fn read_bit(&mut self) -> Result<u8, std::io::Error> {
+        if self.bit == 7 {
+            let mut buf = [0_u8];
+            self.reader.read_exact(&mut buf)?;
+            self.cache = buf[0];
+        }
+
+        let value = (self.cache >> self.bit) & 1;
+
+        if self.bit == 0 {
+            self.bit = 8;
+        }
+        self.bit -= 1;
+
+        Ok(value)
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use std::io::Cursor;
+
     use super::*;
 
     #[test]
@@ -142,5 +192,25 @@ mod tests {
 
         writer.close().unwrap();
         assert_eq!(compressed, vec![0b_111_000_00, 0b_1_010_110_0]);
+    }
+
+    #[test]
+    fn test_reader() {
+        let compressed = vec![0b_11_110000, 0b_10_101_100, 0b_11001_001];
+        let mut cursor = Cursor::new(&compressed);
+        let mut reader = BitReader::new(&mut cursor);
+
+        assert_eq!(reader.read_bit().unwrap(), 1);
+        assert_eq!(reader.read_bit().unwrap(), 1);
+        assert_eq!(reader.read_byte().unwrap(), 0b_11000010);
+        assert_eq!(reader.read_bit().unwrap(), 1);
+        assert_eq!(reader.read_bit().unwrap(), 0);
+        assert_eq!(reader.read_bit().unwrap(), 1);
+        assert_eq!(reader.read_byte().unwrap(), 0b_10011001);
+        assert_eq!(reader.read_bit().unwrap(), 0);
+        assert_eq!(reader.read_bit().unwrap(), 0);
+        assert_eq!(reader.read_bit().unwrap(), 1);
+        assert!(reader.read_bit().is_err());
+        assert!(reader.read_byte().is_err());
     }
 }

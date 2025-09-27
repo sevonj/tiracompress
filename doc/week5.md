@@ -11,11 +11,11 @@ Time spent: 1h
 Task: LZ77 BitWriter
 Time spent: 40min
 
-**What did I learn?**
+Task: LZ77 BitReader
+Time spent: 10min
 
+**What did I learn?**
 
 **What did I not learn?**
 
-
 **Project progress?**
-
