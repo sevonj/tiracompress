@@ -40,7 +40,7 @@ impl<W: Write> BitWriter<W> {
             }
 
             len -= len_write;
-            data <<= len_write;
+            data <<= len_write % 8;
         }
 
         Ok(())

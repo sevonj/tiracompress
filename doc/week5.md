@@ -14,6 +14,9 @@ Time spent: 40min
 Task: LZ77 BitReader
 Time spent: 10min
 
+Task: LZ77 Bit-packed read-write
+Time spent: 15min
+
 **What did I learn?**
 
 **What did I not learn?**
