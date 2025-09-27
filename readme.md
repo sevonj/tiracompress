@@ -8,6 +8,7 @@ TiraCompress is a file compressor.
 [➜ report 2](doc/week2.md)
 [➜ report 3](doc/week3.md)
 [➜ report 4](doc/week4.md)
+[➜ report 4](doc/week5.md)
 
 
 ## Development

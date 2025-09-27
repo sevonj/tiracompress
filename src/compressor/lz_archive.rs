@@ -5,7 +5,7 @@ use std::io::Write;
 
 use super::LzPointer;
 
-const LEN_SEARCH_WINDOW: usize = 8;
+//const LEN_SEARCH_WINDOW: usize = 8;
 
 pub struct LzArchive {
     data: Vec<u8>, // Uncompressed
@@ -33,14 +33,7 @@ impl LzArchive {
     pub fn write<W: Write>(&self, writer: &mut W) -> Result<(), std::io::Error> {
         let mut i = 0;
         while i < self.data.len() {
-            let input_start = if i > LEN_SEARCH_WINDOW {
-                i - LEN_SEARCH_WINDOW
-            } else {
-                0
-            };
-            let input = &self.data[input_start..];
-
-            if let Some(ptr) = LzPointer::find(input, i - input_start)? {
+            if let Some(ptr) = LzPointer::find(&self.data, i)? {
                 writer.write_u8(1_u8)?; // To be packed into 1 bit
                 writer.write_u8(ptr.off() as u8)?; // To be packed into n bits
                 writer.write_u8(ptr.len() as u8)?; // To be packed into m bits
@@ -82,7 +75,7 @@ mod tests {
             0, rc, 0, e, 0, p, 0, underscore, 0, e, 0, a, 0, t, 0, space, //
             1, 8, 3, // ptr to "Rep"
             1, 7, 7, // ptr to "eat Repeat Rep"
-            1, 3, 3, // ptr to "Rep" at the end of previous ptr data
+            1, 18, 3, // ptr to "Rep" at the beginning
         ];
 
         assert_eq!(output, expected)

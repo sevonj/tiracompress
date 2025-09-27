@@ -20,4 +20,5 @@ None used.
 ## Sources
 - https://en.wikipedia.org/wiki/LZ77_and_LZ78
 - https://en.wikipedia.org/wiki/Huffman_coding
+- Elegant Compression in Text (The LZ 77 Method) - Computerphile - https://www.youtube.com/watch?v=goOa3DGezUA
 - TODO
