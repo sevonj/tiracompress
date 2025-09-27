@@ -29,8 +29,18 @@ impl LzArchive {
         todo!()
     }
 
+    /// Unpack self space-inefficient whole byte aligned
+    pub fn read_byte_align<R: Read>(_reader: &mut R) -> Result<Self, std::io::Error> {
+        todo!()
+    }
+
     /// Pack self
     pub fn write<W: Write>(&self, writer: &mut W) -> Result<(), std::io::Error> {
+        todo!()
+    }
+
+    /// Pack self, space-inefficient whole byte aligned
+    pub fn write_byte_align<W: Write>(&self, writer: &mut W) -> Result<(), std::io::Error> {
         let mut i = 0;
         while i < self.data.len() {
             if let Some(ptr) = LzPointer::find(&self.data, i)? {
@@ -61,7 +71,7 @@ mod tests {
         let arc = LzArchive::new(input.to_vec());
 
         let mut output = vec![];
-        arc.write(&mut output).unwrap();
+        arc.write_byte_align(&mut output).unwrap();
 
         let rc = b'R';
         let e = b'e';
