@@ -10,6 +10,15 @@ TiraCompress is a file compressor.
 [➜ report 4](doc/week4.md)
 [➜ report 4](doc/week5.md)
 
+## Usage
+
+Example - create archive:
+
+`tiracompress -c -i path/to/uncompressed -o path/to/archive -a lz77`
+
+Example - extract archive:
+
+`tiracompress -x -i path/to/archive -o path/to/uncompressed`
 
 ## Development
 
@@ -24,6 +33,7 @@ TiraCompress is a file compressor.
   
 **Other**
   - Just build & run: `cargo run --release`
+    - You can pass arguments to the app with `--`: `cargo run --release -- -xi samples/powerpark.mp3.arc -o samples/powerpark-extracted.mp3`
   - Tests: `cargo test`
   - Test coverage: `cargo llvm-cov --html`
     - Report can be found at `target/llvm-cov/html/index.html`
