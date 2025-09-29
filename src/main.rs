@@ -85,7 +85,7 @@ fn main() {
             args.input_filepath.with_extension(
                 args.input_filepath
                     .extension()
-                    .map(|s| s.to_string_lossy().to_owned().to_string())
+                    .map(|s| s.to_string_lossy().clone().to_string())
                     .unwrap_or_default()
                     + ".arc",
             )
@@ -153,7 +153,7 @@ fn main() {
             args.input_filepath.with_extension(
                 args.input_filepath
                     .extension()
-                    .map(|s| s.to_string_lossy().to_owned().to_string())
+                    .map(|s| s.to_string_lossy().clone().to_string())
                     .unwrap_or_default()
                     + ".extracted",
             )
