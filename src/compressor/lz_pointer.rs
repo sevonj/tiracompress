@@ -38,16 +38,16 @@ impl LzPointer {
         let mut best_off = 0;
 
         for off in input_start..input_pos {
+            // When either max len or end of input buffer is reached.
+            let too_far = std::cmp::min(input_pos + Self::MAX_LEN, input.len());
+
             for (i, byte) in input[off..].iter().enumerate() {
                 let off_input_char = input_pos + i;
                 if i > best_len {
                     best_off = off;
                     best_len = i;
                 }
-                if i == Self::MAX_LEN {
-                    break;
-                }
-                if off_input_char == input.len() {
+                if off_input_char == too_far {
                     break;
                 }
                 if *byte != input[off_input_char] {
