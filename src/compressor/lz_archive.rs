@@ -160,17 +160,17 @@ mod tests {
         // ptr to "Rep" at the beginning
         let p1 = LzPointer::new(8, 3);
         assert_eq!(result_reader.read_u8().unwrap(), 1);
-        assert_eq!(result_reader.read_u16::<LE>().unwrap(), p1.into());
+        assert_eq!(p1, result_reader.read_u16::<LE>().unwrap().into());
 
         // ptr to "eat Repeat Rep"
         let p2 = LzPointer::new(7, 7);
         assert_eq!(result_reader.read_u8().unwrap(), 1);
-        assert_eq!(result_reader.read_u16::<LE>().unwrap(), p2.into());
+        assert_eq!(p2, result_reader.read_u16::<LE>().unwrap().into());
 
         // ptr to "Rep" at the beginning
         let p3 = LzPointer::new(18, 3);
         assert_eq!(result_reader.read_u8().unwrap(), 1);
-        assert_eq!(result_reader.read_u16::<LE>().unwrap(), p3.into());
+        assert_eq!(p3, result_reader.read_u16::<LE>().unwrap().into());
     }
 
     #[test]
