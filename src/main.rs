@@ -4,6 +4,7 @@ use std::io::Read;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
+use std::time::Instant;
 
 use byteorder::LittleEndian as LE;
 use byteorder::ReadBytesExt;
@@ -50,6 +51,8 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
+    let t_start = Instant::now();
+
     if !args.create && !args.extract {
         println!("No operation: Do you want to create an archive or extract it?");
         println!("Bye.");
@@ -94,7 +97,6 @@ fn main() {
             return;
         }
         println!("Success.");
-        println!("Bye.");
     } else {
         // These IO error matches could be made much nicer, but who has time for that?
 
@@ -163,8 +165,11 @@ fn main() {
             return;
         }
         println!("Success.");
-        println!("Bye.");
     }
+
+    let t_end = Instant::now();
+    println!("Time: {:?}", t_end - t_start);
+    println!("Bye.");
 }
 
 fn create_archive(
