@@ -20,6 +20,9 @@ Time spent: 15min
 Task: Speed-code a cli interface
 Time spent: 40min
 
+Task: Make output file optional
+Time spent: 10min
+
 **What did I learn?**
 
 **What did I not learn?**

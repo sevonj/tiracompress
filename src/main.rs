@@ -26,18 +26,23 @@ enum CompressAlgo {
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
+    /// Create archive
     #[arg(short, long)]
     create: bool,
 
+    /// Extract archive
     #[arg(short = 'x', long)]
     extract: bool,
 
+    /// Input file (required)
     #[arg(short, long)]
     input_filepath: PathBuf,
 
+    /// Output file (optional)
     #[arg(short, long)]
-    output_filepath: PathBuf,
+    output_filepath: Option<PathBuf>,
 
+    /// Compression scheme (required for --create)
     #[arg(short, long)]
     algorithm: Option<CompressAlgo>,
 }
@@ -73,7 +78,17 @@ fn main() {
             }
         };
 
-        if let Err(e) = create_archive(algo, &args.output_filepath, contents) {
+        let out_path = args.output_filepath.as_ref().cloned().unwrap_or_else(|| {
+            args.input_filepath.with_extension(
+                args.input_filepath
+                    .extension()
+                    .map(|s| s.to_string_lossy().to_owned().to_string())
+                    .unwrap_or_default()
+                    + ".arc",
+            )
+        });
+
+        if let Err(e) = create_archive(algo, &out_path, contents) {
             println!("Output file err: '{e}'");
             println!("Bye.");
             return;
@@ -83,7 +98,7 @@ fn main() {
     } else {
         // These IO error matches could be made much nicer, but who has time for that?
 
-        let mut file = match File::open(args.input_filepath) {
+        let mut file = match File::open(&args.input_filepath) {
             Ok(file) => file,
             Err(e) => {
                 println!("Input file err: '{e}'");
@@ -132,7 +147,17 @@ fn main() {
             _ => panic!("Unknown algo"),
         };
 
-        if let Err(e) = extract_archive(algo, &mut file, &args.output_filepath) {
+        let out_path = args.output_filepath.as_ref().cloned().unwrap_or_else(|| {
+            args.input_filepath.with_extension(
+                args.input_filepath
+                    .extension()
+                    .map(|s| s.to_string_lossy().to_owned().to_string())
+                    .unwrap_or_default()
+                    + ".extracted",
+            )
+        });
+
+        if let Err(e) = extract_archive(algo, &mut file, &out_path) {
             println!("Output file err: '{e}'");
             println!("Bye.");
             return;

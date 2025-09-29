@@ -14,11 +14,13 @@ TiraCompress is a file compressor.
 
 Example - create archive:
 
-`tiracompress -c -i path/to/uncompressed -o path/to/archive -a lz77`
+`tiracompress -c -i path/to/file -a lz77`
 
 Example - extract archive:
 
-`tiracompress -x -i path/to/archive -o path/to/uncompressed`
+`tiracompress -x -i path/to/archive`
+
+`tiracompress --help` for more more usage details.
 
 ## Development
 
