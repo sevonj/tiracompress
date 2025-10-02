@@ -6,9 +6,10 @@ use std::io::Cursor;
 use std::io::Read;
 use std::io::Write;
 
+use super::BitReader;
+use super::BitWriter;
 use super::CodeReader;
 use super::CodeWriter;
-use super::HuffmanCode;
 use super::HuffmanTreeNode;
 
 pub struct HuffmanArchive {
@@ -16,9 +17,8 @@ pub struct HuffmanArchive {
 }
 
 /// Archive layout:
-/// num_codes: u32
 /// num_bytes: u32
-/// code_table: [(byte: u8, code: HuffmanCode) * num_codes]
+/// tree: (serialized huffman tree)
 /// compressed data: [(arbitrary number of bits) * num_bytes]
 impl HuffmanArchive {
     pub fn new(data: Vec<u8>) -> Self {
@@ -35,18 +35,18 @@ impl HuffmanArchive {
 
     /// Unpack self
     pub fn read<R: Read>(reader: &mut R) -> Result<Self, std::io::Error> {
-        let num_codes = reader.read_u32::<LE>()?;
         let num_bytes = reader.read_u32::<LE>()?;
-        let mut code_table = HashMap::new();
-        let mut data = Vec::with_capacity(num_bytes as usize);
 
-        for _ in 0..num_codes {
-            let v = reader.read_u8()?;
-            let k = HuffmanCode::read(reader)?;
-            code_table.insert(k, v);
+        let mut bitreader = BitReader::new(&mut *reader);
+        let tree = HuffmanTreeNode::read(&mut bitreader)?;
+        let codes = tree.into_codes();
+        let mut codes_reverse = HashMap::new();
+        for (k, v) in codes {
+            codes_reverse.insert(v, k);
         }
 
-        let mut code_reader = CodeReader::new(reader, &code_table);
+        let mut data = Vec::with_capacity(num_bytes as usize);
+        let mut code_reader = CodeReader::new(reader, &codes_reverse);
         for _ in 0..num_bytes {
             data.push(code_reader.read().unwrap());
         }
@@ -56,20 +56,14 @@ impl HuffmanArchive {
 
     /// Pack self
     pub fn write<W: Write>(&self, writer: &mut W) -> Result<(), std::io::Error> {
-        let tree = HuffmanTreeNode::from_reader(&mut Cursor::new(&self.data)).unwrap();
-        let codes = tree.into_codes();
-
-        // num_codes
-        writer.write_u32::<LE>(codes.len() as u32)?;
-
         // num_bytes
         writer.write_u32::<LE>(self.data.len() as u32)?;
 
-        // code_table
-        for (k, v) in &codes {
-            writer.write_u8(*k)?;
-            v.write(writer)?;
-        }
+        let tree = HuffmanTreeNode::from_reader(&mut Cursor::new(&self.data)).unwrap();
+        let mut bitwriter = BitWriter::new(&mut *writer);
+        tree.write(&mut bitwriter)?;
+        bitwriter.close()?;
+        let codes = tree.into_codes();
 
         // compressed_data
         let mut code_writer = CodeWriter::new(writer);

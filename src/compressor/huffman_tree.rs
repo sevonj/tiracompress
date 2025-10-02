@@ -1,7 +1,10 @@
-use super::HuffmanCode;
-
 use std::collections::HashMap;
 use std::io::Read;
+use std::io::Write;
+
+use super::BitReader;
+use super::BitWriter;
+use super::HuffmanCode;
 
 /// The node struct used during tree construction.
 #[derive(Debug)]
@@ -39,6 +42,38 @@ impl HuffmanTreeNode {
             join_nodes(&mut nodes);
         }
         nodes.pop().unwrap()
+    }
+
+    /// Deserialize tree
+    pub fn read<R: Read>(bitreader: &mut BitReader<R>) -> Result<Self, std::io::Error> {
+        if bitreader.read_bit()? == 1 {
+            return Ok(Self::new(bitreader.read_byte()?));
+        }
+
+        let left = Some(Box::new(Self::read(bitreader)?));
+        let right = Some(Box::new(Self::read(bitreader)?));
+
+        Ok(Self {
+            left,
+            right,
+            freq: 0,
+            value: 0,
+        })
+    }
+
+    /// Serialize tree
+    pub fn write<W: Write>(&self, bitwriter: &mut BitWriter<W>) -> Result<(), std::io::Error> {
+        if self.is_leaf() {
+            bitwriter.write(1, 1)?;
+            bitwriter.write(8, self.value)?;
+            return Ok(());
+        }
+        bitwriter.write(1, 0)?;
+
+        self.left.as_ref().unwrap().write(bitwriter)?;
+        self.right.as_ref().unwrap().write(bitwriter)?;
+
+        Ok(())
     }
 
     /// Turn the tree into a lookup table. 1 => left, 0 => right

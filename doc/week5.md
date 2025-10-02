@@ -32,6 +32,9 @@ Time spent: 10min
 Task: Rework LZ pointer
 Time spent: 1h
 
+Task: Optimize size of packed huffman tree
+Time spent: 30min
+
 **What did I learn?**
 
 **What did I not learn?**

@@ -1,9 +1,4 @@
-use byteorder::LittleEndian as LE;
-use byteorder::ReadBytesExt;
-use std::io::Read;
-use std::io::Write;
-
-/// The serializable huffman code format.
+/// Huffman code format used for lookup table during encoding & decoding.
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct HuffmanCode {
     len: u8,   // Number of bits used.
@@ -24,20 +19,6 @@ impl HuffmanCode {
         let num_unused_bits = 32 - len;
         let bits = (bits << num_unused_bits) >> num_unused_bits;
         Self { len, bits }
-    }
-
-    /// Deserialize (lookup table, not packed data)
-    pub fn read<R: Read>(reader: &mut R) -> Result<Self, std::io::Error> {
-        let len = reader.read_u8()?;
-        let bits = reader.read_u32::<LE>()?;
-        Ok(Self { len, bits })
-    }
-
-    /// Serialize (lookup table, not packed data)
-    pub fn write<W: Write>(&self, writer: &mut W) -> Result<(), std::io::Error> {
-        writer.write_all(&[self.len])?;
-        writer.write_all(&self.bits.to_le_bytes())?;
-        Ok(())
     }
 }
 
