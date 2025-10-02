@@ -40,14 +40,11 @@ impl LzArchive {
                 break;
             }
 
-            let is_ptr = bitreader.read_bit()? == 1;
-            if !is_ptr {
+            let ptr = LzPointer::read(&mut bitreader)?;
+
+            if ptr.is_literal() {
                 data.push(bitreader.read_byte()?);
             } else {
-                let ptr = LzPointer::from(u16::from_le_bytes([
-                    bitreader.read_byte()?,
-                    bitreader.read_byte()?,
-                ]));
                 let start = data.len() - ptr.off();
                 let end = start + ptr.len();
 
@@ -68,14 +65,11 @@ impl LzArchive {
 
         let mut i = 0;
         while i < self.data.len() {
-            if let Some(ptr) = LzPointer::find(&self.data, i)? {
-                i += ptr.len();
-                bitwriter.write(1, 1)?;
-                let bytes = u16::from(ptr).to_le_bytes();
-                bitwriter.write(8, bytes[0])?;
-                bitwriter.write(8, bytes[1])?;
-            } else {
-                bitwriter.write(1, 0)?;
+            let ptr = LzPointer::find(&self.data, i)?;
+            ptr.write(&mut bitwriter)?;
+            i += ptr.len();
+
+            if ptr.is_literal() {
                 bitwriter.write(8, self.data[i])?;
                 i += 1;
             }

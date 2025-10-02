@@ -26,6 +26,12 @@ Time spent: 10min
 Task: Fiddle with LZ match finding, cut ~25% of the speed on some test files
 Time spent: 30min
 
+Task: More samples
+Time spent: 10min
+
+Task: Rework LZ pointer
+Time spent: 1h
+
 **What did I learn?**
 
 **What did I not learn?**
