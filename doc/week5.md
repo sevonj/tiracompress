@@ -23,7 +23,7 @@ Time spent: 40min
 Task: Make output file optional
 Time spent: 10min
 
-Task: Fiddle with LZ match finding, cut ~25% of the speed on some test files
+Task: Fiddle with LZ match finding, cut ~25% of the ~~speed~~ time on some test files
 Time spent: 30min
 
 Task: More samples
