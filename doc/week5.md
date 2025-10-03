@@ -35,8 +35,18 @@ Time spent: 1h
 Task: Optimize size of packed huffman tree
 Time spent: 30min
 
+Task: Peer review
+Time spent: 3h
+
+Task: Touch up week 5 report & testing doc
+Time spent: 30min
+
 **What did I learn?**
+
+From peer review, I learned just a bit about completely unrelated algorithms. It was interesting to see an implementation Delaunay triangulation, when I have previously used a library for that.
 
 **What did I not learn?**
 
 **Project progress?**
+
+The important parts should be functionally complete. I will still clean up the code, potentially optimize it, and also set up a system for benchmarking sample files in bulk. 

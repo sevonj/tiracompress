@@ -39,5 +39,6 @@ Example - extract archive:
   - Tests: `cargo test`
   - Test coverage: `cargo llvm-cov --html`
     - Report can be found at `target/llvm-cov/html/index.html`
+    - Omit the `--html` flag for just terminal output
     - Install the coverage tool by running `cargo install cargo-llvm-cov`
   - Linter: `cargo clippy`
