@@ -12,14 +12,14 @@ use super::CodeReader;
 use super::CodeWriter;
 use super::HuffmanTreeNode;
 
+/// Archive layout:
+/// - len_uncompressed: u32
+/// - compressed tree (end is byte-aligned)
+/// - compressed data
 pub struct HuffmanArchive {
     data: Vec<u8>, // Uncompressed
 }
 
-/// Archive layout:
-/// num_bytes: u32
-/// tree: (serialized huffman tree)
-/// compressed data: [(arbitrary number of bits) * num_bytes]
 impl HuffmanArchive {
     pub fn new(data: Vec<u8>) -> Self {
         Self { data }

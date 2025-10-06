@@ -2,7 +2,7 @@
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct HuffmanCode {
     len: u8,   // Number of bits used.
-    bits: u32, // Most significant get truncated.
+    bits: u32, // Leftmost bits get truncated.
 }
 
 impl HuffmanCode {
@@ -15,7 +15,7 @@ impl HuffmanCode {
     }
 
     pub fn new(len: u8, bits: u32) -> Self {
-        assert!(len <= 32);
+        debug_assert!(len <= 32);
         let num_unused_bits = 32 - len;
         let bits = (bits << num_unused_bits) >> num_unused_bits;
         Self { len, bits }
@@ -32,7 +32,7 @@ impl std::fmt::Display for HuffmanCode {
 mod tests {
     use super::*;
 
-    // Make sure that unused bits are scrubbed during construction.
+    // Make sure that unused bits are scrubbed during construction, so that Eq can be derived.
     #[test]
     fn test_equal() {
         let a = HuffmanCode::new(3, 0b_101);

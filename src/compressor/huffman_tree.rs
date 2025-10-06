@@ -14,12 +14,14 @@ pub struct HuffmanTreeNode {
     left: Option<Box<Self>>,
     right: Option<Box<Self>>,
     freq: u32,
+    /// The byte this maps to. Used by leaves.
     value: u8,
 }
 
 impl HuffmanTreeNode {
     pub fn is_leaf(&self) -> bool {
-        self.left.is_none() && self.right.is_none()
+        // If one child is none, then both are.
+        self.left.is_none()
     }
 
     fn new(value: u8) -> Self {
@@ -31,7 +33,7 @@ impl HuffmanTreeNode {
         }
     }
 
-    /// Generate a tree from a reader.
+    /// Generate a tree from data.
     pub fn from_reader<R: Read>(reader: &mut R) -> Result<Self, std::io::Error> {
         let nodes = collect_nodes(reader)?;
         Ok(Self::build_tree(nodes))
@@ -102,7 +104,7 @@ impl HuffmanTreeNode {
     }
 }
 
-/// Joins two bottom nodes into a new parent node. Right >= Left.  
+/// Joins two bottom nodes into a new parent node. Children are arranged so that Right >= Left.  
 fn join_nodes(nodes: &mut Vec<HuffmanTreeNode>) {
     nodes.sort_unstable_by(|a, b| b.freq.cmp(&a.freq));
 

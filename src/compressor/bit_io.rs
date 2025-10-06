@@ -2,7 +2,7 @@ use std::cmp::min;
 use std::io::Read;
 use std::io::Write;
 
-/// Writer for packed data
+/// A simple writer for bit-packed data. Wraps a standard byte-aligned writer.
 pub struct BitWriter<W: Write> {
     writer: W,
     /// Cached incomplete byte
@@ -20,8 +20,8 @@ impl<W: Write> BitWriter<W> {
         }
     }
 
-    /// len: number of bits in data
-    /// data: bits to pack. Most significant are cut off.u
+    /// ´len´ - Number of bits to pack. Expected range: 1..=8
+    /// ´data´ - The data to pack. Leftmost bits are cut off.
     pub fn write(&mut self, mut len: u8, mut data: u8) -> Result<(), std::io::Error> {
         data <<= 8 - len;
 
@@ -46,6 +46,7 @@ impl<W: Write> BitWriter<W> {
         Ok(())
     }
 
+    /// Write leftover bits in cache. Consumes self.
     pub fn close(mut self) -> Result<(), std::io::Error> {
         if self.cache_len > 0 {
             self.cache <<= 8 - self.cache_len;
@@ -55,7 +56,7 @@ impl<W: Write> BitWriter<W> {
     }
 }
 
-/// A very simple reader for packed data
+/// A very simple reader for packed data. Wraps a standard byte-aligned reader.
 pub struct BitReader<R: Read> {
     reader: R,
     /// Cached incomplete byte
@@ -85,7 +86,7 @@ impl<R: Read> BitReader<R> {
         Ok(byte)
     }
 
-    /// Next bit from stream. Return falue is always 0 or 1.
+    /// Next bit from stream. Return value is always 0 or 1.
     pub fn read_bit(&mut self) -> Result<u8, std::io::Error> {
         if self.bit == 7 {
             let mut buf = [0_u8];

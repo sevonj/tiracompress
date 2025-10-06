@@ -8,12 +8,13 @@ use super::BitReader;
 use super::BitWriter;
 use super::LzPointer;
 
-//const LEN_SEARCH_WINDOW: usize = 8;
-
 pub struct LzArchive {
     data: Vec<u8>, // Uncompressed
 }
 
+/// Archive layout:
+/// - len_uncompressed: u32
+/// - compressed data
 impl LzArchive {
     pub fn new(data: Vec<u8>) -> Self {
         Self { data }
@@ -27,12 +28,13 @@ impl LzArchive {
         self.data
     }
 
-    /// Unpack self
+    /// Uncompress self from reader
     pub fn read<R: Read>(reader: &mut R) -> Result<Self, std::io::Error> {
         let len = reader.read_u32::<LE>()? as usize;
 
         let mut bitreader = BitReader::new(reader);
 
+        // Knowing the final size beforehand lets you avoid reallocation, which is slow.
         let mut data = Vec::with_capacity(len);
 
         loop {
@@ -57,7 +59,7 @@ impl LzArchive {
         Ok(Self { data })
     }
 
-    /// Pack self
+    /// Compress self to writer sink
     pub fn write<W: Write>(&self, writer: &mut W) -> Result<(), std::io::Error> {
         writer.write_u32::<LE>(self.data.len() as u32)?;
 
