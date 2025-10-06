@@ -101,6 +101,20 @@ mod tests {
     }
 
     #[test]
+    fn test_lz_compress_packed_cycle_text_2() {
+        let input = b"Cut the monitors Cut the monitors Cut the monitors Cut the monitors Tomorrow I'll Cut the monitors Cut the monitors Cut the monitors";
+
+        let arc = LzArchive::new(input.to_vec());
+        let mut compressed = vec![];
+        arc.write(&mut compressed).unwrap();
+
+        let arc2 = LzArchive::read(&mut Cursor::new(compressed)).unwrap();
+        let decompressed = arc2.inner();
+
+        assert_eq!(decompressed, input);
+    }
+
+    #[test]
     fn test_lz_compress_packed_cycle_file() {
         let input = std::fs::read("samples/skrojw.mid").unwrap();
 
