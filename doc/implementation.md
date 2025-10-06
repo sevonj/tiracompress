@@ -5,7 +5,7 @@
 
 All relevant data structures are housed in submodules named after them (except for IO mods, which house both a reader and a writer).
 
-For those not familiar with Rust, a `mod.rs` file inside a folder is the topmost "index" module, while the other ones are its children.
+For those unfamiliar with Rust, a module in a `mod.rs` file is the folder's level. `./name/mod.rs` is equivalent to `./name.rs` in the hierarcy.
 
 ## Complexities and Performance
 
