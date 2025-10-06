@@ -1,3 +1,7 @@
+mod huffman_code;
+mod huffman_io;
+mod huffman_tree;
+
 use byteorder::LittleEndian as LE;
 use byteorder::ReadBytesExt;
 use byteorder::WriteBytesExt;
@@ -6,11 +10,12 @@ use std::io::Cursor;
 use std::io::Read;
 use std::io::Write;
 
-use super::BitReader;
-use super::BitWriter;
-use super::CodeReader;
-use super::CodeWriter;
-use super::HuffmanTreeNode;
+use super::bit_io::BitReader;
+use super::bit_io::BitWriter;
+use huffman_code::HuffmanCode;
+use huffman_io::CodeReader;
+use huffman_io::CodeWriter;
+use huffman_tree::HuffmanTreeNode;
 
 /// Archive layout:
 /// - len_uncompressed: u32

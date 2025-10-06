@@ -1,12 +1,14 @@
+mod lz_pointer;
+
 use byteorder::LittleEndian as LE;
 use byteorder::ReadBytesExt;
 use byteorder::WriteBytesExt;
 use std::io::Read;
 use std::io::Write;
 
-use super::BitReader;
-use super::BitWriter;
-use super::LzPointer;
+use super::bit_io::BitReader;
+use super::bit_io::BitWriter;
+use lz_pointer::LzPointer;
 
 pub struct LzArchive {
     data: Vec<u8>, // Uncompressed

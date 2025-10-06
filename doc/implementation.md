@@ -3,7 +3,9 @@
 
 ## Structure
 
-All data structures relevant to the implementation are housed in submodules under ´crate::compressor´. Of those structures, `HuffmanArchive` and `LzArchive` public. Except for I/O, each struct is located in a module of the same name.
+All relevant data structures are housed in submodules named after them (except for IO mods, which house both a reader and a writer).
+
+For those not familiar with Rust, a `mod.rs` file inside a folder is the topmost "index" module, while the other ones are its children.
 
 ## Complexities and Performance
 
