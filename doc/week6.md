@@ -12,3 +12,4 @@ Time spent: 1h
 
 **Project progress?**
 
+Not much has happened this week. I will go through the requirements this weekend and then make sure I meet them all.
