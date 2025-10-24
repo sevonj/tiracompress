@@ -10,28 +10,6 @@ All data conversion is primarily tested by cycling conversions back and forth. T
 
 The main function and the user interface are not tested. Some obvious functions, such as getters are also not tested (at least directly).
 
-## Sample Data
-
-An attempt was made to include files from a variety of categories:
-
-- Binary
-    - Compressed
-        - Lossy
-        - Lossless
-    - Uncompressed
-        - Contains obvious structure*
-        - Mostly random*
-- Text based
-    - Intended for human consumption
-    - Not primarily intended for humans**
-
-*Based on vibes and looking at them with a hex editor.  
-(see for yourself by dropping a file to https://hexed.it/)
-
-**Even though it may be considered humand readable to some.
-
-TODO: Write down file types' categories.
-
 ## Coverage
 
 Coverage report from friday, 2025-10-03:
@@ -48,4 +26,4 @@ Coverage report from friday, 2025-10-03:
 | main.rs                       | 252     | 252            | 0.00%   | 7         | 7                | 0.00%    | 139   | 139          | 0.00%   | 0        | 0               | -     |
 | TOTAL                         | 2317    | 298            | 87.14%  | 121       | 10               | 91.74%   | 1144  | 146          | 87.24%  | 0        | 0               | -     |
 
-Branch coverage is currently missing, see https://github.com/taiki-e/cargo-llvm-cov/issues/8. I will attempt to produce numbers later.
+Branch coverage is missing, see https://github.com/taiki-e/cargo-llvm-cov/issues/8.

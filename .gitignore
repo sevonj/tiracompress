@@ -2,6 +2,6 @@
 
 *.arc
 *.extracted
-flamegraph.svg
+./flamegraph.svg
 perf.data
 perf.data.old
